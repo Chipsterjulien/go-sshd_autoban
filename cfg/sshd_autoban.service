@@ -1,0 +1,12 @@
+[Unit]
+Description=A ssh autoban for fast and slow brute force attack
+Wants=network.target
+After=syslog.target
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/sshd_autoban
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
