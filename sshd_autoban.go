@@ -252,7 +252,7 @@ func check_ip_process(conf_obj *Configuration, rw_chan chan<- Thing, crash_chan 
 	ip_regex, _ := regexp.Compile("([0-9]{1,3}\\.){3}[0-9]{1,3}")
 	flashed_ip_map := make(map[string]Ip)
 	white_ip_map := make(map[string]bool)
-	ticker := time.NewTicker(1 * time.Minutes)
+	ticker := time.NewTicker(1 * time.Minute)
 
 	for _, ip := range *whitelist {
 		white_ip_map[ip] = true
@@ -275,7 +275,7 @@ func check_ip_process(conf_obj *Configuration, rw_chan chan<- Thing, crash_chan 
 			now := time.Now()
 			for k, v := range flashed_ip_map {
 				if v.Banned {
-					if now.Sub(v.Time_time) >= (24 * time.Hours) {
+					if now.Sub(v.Time_time) >= (24 * time.Hour) {
 						delete(flashed_ip_map, k)
 					}
 				}
