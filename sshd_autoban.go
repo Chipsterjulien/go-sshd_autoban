@@ -695,17 +695,17 @@ func wait_cmd(conf_obj *Configuration, cmd *exec.Cmd, conn net.Conn) {
 }
 
 func main() {
-	ban_file := "banned_ip"
+	/*ban_file := "banned_ip"
 	log_file := "log.log"
 	conf_file := "sshd_autoban.json"
 	whitelist_file := "whitelist"
-	blacklist_file := "blacklist"
+	blacklist_file := "blacklist"*/
 
-	/*ban_file := "/var/log/sshd_autoban/banned_ip"
+	ban_file := "/var/log/sshd_autoban/banned_ip"
 	log_file := "/var/log/sshd_autoban/main.log"
 	conf_file := "/etc/sshd_autoban/sshd_autoban.json"
 	whitelist_file := "/etc/sshd_autoban/whitelist"
-	blacklist_file := "/etc/sshd_autoban/blacklist"*/
+	blacklist_file := "/etc/sshd_autoban/blacklist"
 
 	check_file(&log_file, true, true, true)
 	check_file(&ban_file, true, true, true)
