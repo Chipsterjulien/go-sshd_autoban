@@ -363,7 +363,7 @@ func find_attack(conf_obj *Configuration, line string, ip_regex *regexp.Regexp, 
 // Find and return local ip
 func find_local_ip() string {
 	// Define the command to get locale ip
-	cmd := []string{"-c", "ip a | grep --color=auto \"[0-9.]\\.[0-9.]\"| awk '{print $2}' | cut -f 1 -d / | grep -v 127.0.0"}
+	cmd := []string{"-c", "ip a | grep \"[0-9.]\\.[0-9.]\"| awk '{print $2}' | cut -f 1 -d / | grep -v 127.0.0"}
 	var counter uint8
 
 	// When computer is starting, network can put many seconds to be activated
