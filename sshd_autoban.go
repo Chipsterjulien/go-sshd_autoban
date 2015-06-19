@@ -363,7 +363,7 @@ func find_attack(conf_obj *Configuration, line string, ip_regex *regexp.Regexp, 
 // Find and return local ip
 func find_local_ip() string {
 	// Define the command to get locale ip
-	cmd := []string{"-c", "ip a | grep \"[0-9.]\\.[0-9.]\"| awk '{print $2}' | cut -f 1 -d / | grep -v 127.0.0"}
+	cmd := []string{"-c", "ip a | grep --color=auto \"[0-9.]\\.[0-9.]\"| awk '{print $2}' | cut -f 1 -d / | grep -v 127.0.0"}
 	var counter uint8
 
 	// When computer is starting, network can put many seconds to be activated
@@ -431,7 +431,7 @@ func get_ip_banned_by_iptables_info() *[]string {
 func getting_whitelist_or_blacklist(whitelist_file *string) *[]string {
 	fd, err := ioutil.ReadFile(*whitelist_file)
 	if err != nil {
-		logger.Println("No", *whitelist_file, "found !")
+		logger.Println(*whitelist_file, "not found !")
 		return &[]string{}
 	}
 
@@ -472,6 +472,13 @@ func init_getting_data(conf_obj *Configuration) (*bufio.Reader, *exec.Cmd, net.C
 
 // Init for getting data with journalctl
 func init_journalctl(conf_obj *Configuration) (*io.ReadCloser, *exec.Cmd) {
+	// Test if journalctl is installed on system
+	test_journalctl_str := []string{"-c", "which journalctl"}
+	_, err := exec.Command("/bin/sh", test_journalctl_str...).Output()
+	if err != nil {
+		logger.Fatal("Journalctl is not install on your system !\n")
+	}
+
 	args := []string{"-c", "journalctl -f -u sshd.service --since now"}
 	cmd := exec.Command("/bin/sh", args...)
 	out, err := cmd.StdoutPipe()
@@ -487,6 +494,13 @@ func init_journalctl(conf_obj *Configuration) (*io.ReadCloser, *exec.Cmd) {
 
 // Init for getting data with syslog
 func init_syslog(conf_obj *Configuration) net.Conn {
+	// Test if syslog-ng is installed on system
+	test_syslogng_str := []string{"-c", "which syslog-ng"}
+	_, err := exec.Command("/bin/sh", test_syslogng_str...).Output()
+	if err != nil {
+		logger.Fatal("Syslog-ng is not install on your system !\n")
+	}
+
 	// Resolve address
 	addr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(conf_obj.Listen_port))
 	if err != nil {
@@ -697,7 +711,7 @@ func wait_cmd(conf_obj *Configuration, cmd *exec.Cmd, conn net.Conn) {
 func main() {
 	/*ban_file := "banned_ip"
 	log_file := "log.log"
-	conf_file := "sshd_autoban.json"
+	conf_file := "cfg/sshd_autoban_example.json"
 	whitelist_file := "whitelist"
 	blacklist_file := "blacklist"*/
 

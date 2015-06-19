@@ -1,5 +1,6 @@
 ** Changelog
 
+        - Adding some lines to test if journalctl or syslog-ng is installed
    v0.1 - Create this script
 
 **
