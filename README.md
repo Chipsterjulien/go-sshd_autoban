@@ -20,7 +20,7 @@ this command from the command prompt:
 
 2. Create /etc/sshd_autoban directory
 
-3. Copy sshd_autoban_example.json to /etc/sshd_autoban/sshd_autoban.json
+3. Copy sshd_autoban_sample.toml to /etc/sshd_autoban/sshd_autoban.toml
 
 4. You should edit it !
 

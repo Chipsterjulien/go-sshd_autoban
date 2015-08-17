@@ -1,0 +1,16 @@
+# logtype can take: debug, info, notice, warning, error, critical
+# warning is the default
+logtype = "debug"
+
+[config]
+requestsnumber = 3
+maxseconds = 15
+maxattemptsbyday= 200
+# bantype can take iptables, hosts or shorewall
+bantype = "iptables"
+cleanupperiod = "month"
+localip = "auto"
+listenport = 19531
+# log can take journalctl or syslog
+log = "journalctl"
+errors = ["Failed password", "Failed none", "Invalid user", "invalid username", "Failed keyboard-interactive", "Failed publickey", "11: Bye Bye", "Did not receive identification string", "authentication failure", "not allowed because not listed"]
