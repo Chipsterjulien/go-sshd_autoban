@@ -1,16 +1,23 @@
 # logtype can take: debug, info, notice, warning, error, critical
-# warning is the default
-logtype = "debug"
+# notice is the default
+logtype = "notice"
 
 [config]
+# Number of authorized requests
 requestsnumber = 3
+# If number on authorized requests will be over in max seconds, the IP will be banned
 maxseconds = 15
-maxattemptsbyday= 200
+# Number of requests by day. If it over, IP will be ban
+maxattemptsbyday= 50
 # bantype can take iptables, hosts or shorewall
 bantype = "iptables"
+# Cleanupperiod can take day, week, month never. You shouldn't use never
 cleanupperiod = "month"
+# localip is deprecated and will be remove
 localip = "auto"
+# The port where sshd_autoban listen if you use syslog method (see log)
 listenport = 19531
 # log can take journalctl or syslog
 log = "journalctl"
+# Intercept errors
 errors = ["Failed password", "Failed none", "Invalid user", "invalid username", "Failed keyboard-interactive", "Failed publickey", "11: Bye Bye", "Did not receive identification string", "authentication failure", "not allowed because not listed"]

@@ -16,19 +16,6 @@ import (
 	"time"
 )
 
-// Struct of config json
-type Configuration struct {
-	Requests_number     int      // Number of authorized requests
-	Max_seconds         int      // If number of authorized requests will be over in max seconds, the ip will be banned
-	Max_attempts_by_day int      // Number of requests by day. If it over, ip will be ban
-	Listen_port         int      // The port where sshd_autoban listen
-	Ban_type            string   // Which ban method
-	Cleanup_period      string   // (day, week, month, never) Clean banned ip
-	Local_ip            string   // (auto) Define the ip address
-	Log                 string   // (journalctl, syslog) Which method of log
-	Errors              []string // Intercept errors
-}
-
 // Ip struct of attackers
 type Ip struct {
 	First_time time.Time
@@ -100,6 +87,7 @@ func analyse_ip(ip *string, flashed_ip_map *map[string]Ip) bool {
 	} else {
 		(*flashed_ip_map)[*ip] = Ip{First_time: now, Time_time: now, Number: 1, Counter: 1, Banned: false}
 	}
+
 	return false
 }
 
@@ -155,8 +143,9 @@ func ban_ip(ip_to_ban *string, rw_chan chan<- Thing, ban_file *string) {
 		// 3600 * 24 * 30
 		next_time = next_time.Add(time.Duration(2592000 * time.Second))
 	}
+
 	str := fmt.Sprintf("\n%s %d Human: %v", *ip_to_ban, next_time.Unix(), next_time)
-	rw_chan <- Thing{Filename: *ban_file, Read: false, Mode: os.O_APPEND | os.O_WRONLY, Data: &str}
+	rw_chan <- Thing{Filename: *ban_file, Read: false, Mode: os.O_APPEND | os.O_WRONLY | os.O_CREATE, Data: &str}
 	log.Notice("%s was banned until %v", *ip_to_ban, next_time)
 }
 
@@ -625,7 +614,7 @@ func read_write_process(rw_chan <-chan Thing, check_chan chan<- []string, clean_
 		if obj.Read {
 			fd, err := ioutil.ReadFile(obj.Filename)
 			if err != nil {
-				log.Critical("%v", err)
+				log.Critical("Unable to read file \"%s\": %v", obj.Filename, err)
 				crash_chan <- "read_write_process"
 			}
 			if obj.Check {
@@ -636,22 +625,23 @@ func read_write_process(rw_chan <-chan Thing, check_chan chan<- []string, clean_
 		} else {
 			fd, err := os.OpenFile(obj.Filename, obj.Mode, 0644)
 			if err != nil {
-				log.Critical("%v", err)
+				log.Critical("Unable to open \"%s\", %v", obj.Filename, err)
 				crash_chan <- "read_write_process"
 			}
 			defer fd.Close()
 
 			w := bufio.NewWriter(fd)
 			if _, err := w.WriteString(*obj.Data); err != nil {
-				log.Critical("%v", err)
+				log.Critical("Unable to write into \"%s\": %v", obj.Filename, err)
 				crash_chan <- "read_write_process"
 			}
 			if err := w.Flush(); err != nil {
-				log.Critical("%v", err)
+				log.Critical("Unable to flush \"%s\": %v", obj.Filename, err)
 				crash_chan <- "read_write_process"
 			}
 		}
 	}
+
 	crash_chan <- "read_write_process"
 }
 
@@ -754,20 +744,21 @@ func wait_cmd(cmd *exec.Cmd, conn net.Conn) {
 }
 
 func main() {
-	ban_file := "banned_ip"
-	logFile := "log.log"
-	confPath := "cfg"
-	confFile := "sshd_autoban_sample"
-	whitelist_file := "whitelist"
-	blacklist_file := "blacklist"
-
 	/*
-		ban_file := "/var/log/sshd_autoban/banned_ip"
-		log_file := "/var/log/sshd_autoban/main.log"
-		conf_file := "/etc/sshd_autoban/sshd_autoban.json"
-		whitelist_file := "/etc/sshd_autoban/whitelist"
-		blacklist_file := "/etc/sshd_autoban/blacklist"
+		ban_file := "banned_ip"
+		logFile := "log.log"
+		confPath := "cfg"
+		confFile := "sshd_autoban_sample"
+		whitelist_file := "whitelist"
+		blacklist_file := "blacklist"
 	*/
+
+	ban_file := "/var/log/sshd_autoban/banned_ip"
+	logFile := "/var/log/sshd_autoban/errors.log"
+	confPath := "/etc/sshd_autoban"
+	confFile := "sshd_autoban"
+	whitelist_file := "/etc/sshd_autoban/whitelist"
+	blacklist_file := "/etc/sshd_autoban/blacklist"
 
 	rw_chan := make(chan Thing)
 	check_chan := make(chan []string)
@@ -780,10 +771,10 @@ func main() {
 
 	loadConfig(&confPath, &confFile)
 
-    /*
-	if viper.GetString("config.localip") == "auto" {
-		viper.SetDefault("localip", find_local_ip())
-	}
+	/*
+		if viper.GetString("config.localip") == "auto" {
+			viper.SetDefault("localip", find_local_ip())
+		}
 	*/
 
 	ip_blacklist := getting_whitelist_or_blacklist(&blacklist_file)
@@ -824,4 +815,5 @@ func main() {
 
 	reply := <-crash_chan
 	log.Critical("Goroutine \"%v\" crashed !", reply)
+	os.Exit(1)
 }
